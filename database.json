@@ -1,0 +1,14 @@
+{
+  "dev": {
+    "driver": "pg",
+    "url": {"ENV": "APP_DATABASE_URL"}
+  },
+  "test": {
+    "driver": "pg",
+    "url": {"ENV": "APP_DATABASE_URL"}
+  },
+  "prod": {
+    "driver": "pg",
+    "url": {"ENV": "APP_DATABASE_URL"}
+  }
+} 
