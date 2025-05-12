@@ -131,7 +131,7 @@ ${config.envPrefix}_SALT_ROUNDS=10
 
   // Create database if it doesn't exist
   try {
-    const dbName = `${config.projectName}-dev`;
+    const dbName = `${config.projectName}_dev`;
     console.log(`Checking if database "${dbName}" exists...`);
 
     // Check if database exists
