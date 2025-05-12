@@ -10,7 +10,7 @@ export const envValidatorSchema = Joi.object({
     .default(AppEnv.DEVELOPMENT),
   PORT: Joi.number().default(8080),
   DATABASE_URL: Joi.string().required(),
-  API_VERSION: Joi.string().default('1.0'),
+  API_VERSION: Joi.number().default('1.0'),
   SECRET: Joi.string().required(),
   SALT_ROUNDS: Joi.number().default(10),
   DOMAIN: Joi.string().default('localhost'),
