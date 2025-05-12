@@ -11,7 +11,7 @@
     "migrate:up": "npm run migrate up",
     "migrate:down": "npm run migrate down",
     "migrate:reset": "npm run migrate reset",
-    "migrate:create": "npm run migrate create",
+    "migrate:create": "node scripts/create-migration.js",
     "db:reset": "npm run migrate:reset && npm run migrate:up",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
