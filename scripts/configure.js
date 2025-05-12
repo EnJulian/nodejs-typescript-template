@@ -20,7 +20,8 @@ const defaultConfig = {
   version: '0.0.1',
   license: 'MIT',
   setupGit: true,
-  setupHusky: true
+  setupHusky: true,
+  databaseName: `${path.basename(process.cwd())}_dev`
 };
 
 // Ask for configuration values
@@ -44,6 +45,11 @@ const questions = [
     name: 'port',
     message: 'Default port:',
     default: defaultConfig.port
+  },
+  {
+    name: 'databaseName',
+    message: 'Database name:',
+    default: defaultConfig.databaseName
   },
   {
     name: 'author',
@@ -119,7 +125,7 @@ function applyConfiguration() {
 
   let envContent = `${config.envPrefix}_NODE_ENV=development
 ${config.envPrefix}_PORT=${config.port}
-${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.projectName}_dev
+${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.databaseName}
 ${config.envPrefix}_API_VERSION=1.0
 ${config.envPrefix}_SECRET=your_secret_key
 ${config.envPrefix}_SALT_ROUNDS=10
@@ -131,7 +137,7 @@ ${config.envPrefix}_SALT_ROUNDS=10
 
   // Create database if it doesn't exist
   try {
-    const dbName = `${config.projectName}_dev`;
+    const dbName = config.databaseName;
     console.log(`Checking if database "${dbName}" exists...`);
 
     // Check if database exists
