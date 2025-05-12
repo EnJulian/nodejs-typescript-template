@@ -119,7 +119,7 @@ function applyConfiguration() {
 
   let envContent = `${config.envPrefix}_NODE_ENV=development
 ${config.envPrefix}_PORT=${config.port}
-${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.projectName}-dev
+${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.projectName}_dev
 ${config.envPrefix}_API_VERSION=1.0
 ${config.envPrefix}_SECRET=your_secret_key
 ${config.envPrefix}_SALT_ROUNDS=10
