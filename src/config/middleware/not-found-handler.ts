@@ -7,11 +7,11 @@ import { ICustomError } from './error-handler';
  */
 export const notFoundHandler = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   const error = new Error(`Route not found: ${req.originalUrl}`) as ICustomError;
   error.statusCode = StatusCodes.NOT_FOUND;
-  
+
   next(error);
 }; 

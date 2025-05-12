@@ -4,14 +4,14 @@
   "description": "A NodeJS TypeScript API template",
   "main": "dist/index.js",
   "scripts": {
-    "start": "npm run migrate:up && node dist/index.js",
+    "start": "npm run build && npm run migrate:up && node dist/index.js",
     "build": "tsc",
-    "dev": "npm run migrate:up && nodemon --exec ts-node ./src/index.ts --mode development",
+    "dev": "npm run build && npm run migrate:up && nodemon --exec ts-node ./src/index.ts --mode development",
     "migrate": "db-migrate --migrations-dir ./migrations",
     "migrate:up": "npm run migrate up",
     "migrate:down": "npm run migrate down",
     "migrate:reset": "npm run migrate reset",
-    "migrate:create": "npm run migrate create",
+    "migrate:create": "node scripts/create-migration.js",
     "db:reset": "npm run migrate:reset && npm run migrate:up",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -62,6 +62,7 @@
     "@types/mocha": "^10.0.1",
     "@types/morgan": "^1.9.4",
     "@types/node": "^20.3.1",
+    "@types/pg": "^8.15.1",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.59.11",
     "@typescript-eslint/parser": "^5.59.11",
@@ -81,4 +82,4 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0"
   }
-} 
+}

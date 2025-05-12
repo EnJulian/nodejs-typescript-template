@@ -1,3 +1,8 @@
+import { configDotenv } from 'dotenv';
+
+// Configure dotenv before any other imports
+configDotenv();
+
 import http from 'http';
 import { Express } from 'express';
 import { envValidatorSchema } from './shared/validators/env-validator';
@@ -6,9 +11,6 @@ import Logger from './config/logger';
 import { connectDB } from './config/database';
 import App from './config/express';
 import { AppEnv } from './shared/enums';
-import { configDotenv } from 'dotenv';
-
-configDotenv();
 
 async function main(App: (...args: any[]) => Express) {
   const logger = new Logger(App.name);

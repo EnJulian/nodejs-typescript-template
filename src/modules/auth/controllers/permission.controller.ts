@@ -40,7 +40,7 @@ export class PermissionController {
   /**
    * Get all available permissions
    */
-  getAllPermissions(req: Request, res: Response) {
+  getAllPermissions(_req: Request, res: Response) {
     const permissions = permissionService.getAllPermissions();
 
     return res.status(StatusCodes.OK).json({
@@ -136,7 +136,7 @@ export class PermissionController {
   /**
    * Get all role permissions
    */
-  async getAllRolePermissions(req: Request, res: Response, next: NextFunction) {
+  async getAllRolePermissions(_req: Request, res: Response, next: NextFunction) {
     try {
       const rolePermissions = await permissionService.getAllRolePermissions();
 
@@ -145,7 +145,7 @@ export class PermissionController {
         data: { rolePermissions },
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 } 

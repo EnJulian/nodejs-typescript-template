@@ -18,7 +18,7 @@ interface AuthenticatedRequest extends Request {
  * @param requiredPermission The permission required to access the resource
  */
 export const requirePermission = (requiredPermission: Permission) => {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
     try {
       // Check if user exists in request (should be added by authentication middleware)
       if (!req.user) {

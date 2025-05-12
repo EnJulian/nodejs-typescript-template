@@ -14,9 +14,11 @@ if (!fs.existsSync(logDir)) {
 const { combine, timestamp, printf, colorize, align } = format;
 
 // Custom log format
-const logFormat = printf(({ timestamp, level, message, context, ...meta }) => {
-  const stringifiedMeta = meta && Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-  return `[${timestamp}] [${level}] ${context ? `[${context}] ` : ''}${message} ${stringifiedMeta}`;
+const logFormat = printf(({ timestamp, level, message, ...meta }) => {
+  // Remove context from meta to avoid displaying it
+  const { context, ...restMeta } = meta;
+  const stringifiedMeta = restMeta && Object.keys(restMeta).length ? JSON.stringify(restMeta, null, 2) : '';
+  return `[${timestamp}] [${level}] ${message} ${stringifiedMeta}`;
 });
 
 // Create file transport for daily rotation
@@ -40,16 +42,15 @@ const consoleTransport = new winston.transports.Console({
 // Custom logger class
 class Logger {
   private logger: winston.Logger;
-  private context?: string;
 
   constructor(context?: string) {
-    this.context = context;
     this.logger = winston.createLogger({
       level: Env.get<string>('NODE_ENV') === AppEnv.PRODUCTION ? 'info' : 'debug',
       format: combine(
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         logFormat
       ),
+      // Store context internally but don't display it in logs
       defaultMeta: context ? { context } : {},
       transports: [
         fileTransport,
