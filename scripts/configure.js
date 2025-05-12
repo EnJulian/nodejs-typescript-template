@@ -103,23 +103,23 @@ function applyConfiguration() {
   // Update package.json
   const packageJsonPath = path.join(process.cwd(), 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-  
+
   packageJson.name = config.projectName;
   packageJson.description = config.projectDescription;
   packageJson.version = config.version;
   packageJson.author = config.author;
   packageJson.license = config.license;
-  
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
   console.log('✅ Updated package.json');
 
   // Update .env.example and create .env
   const envExamplePath = path.join(process.cwd(), '.env.example');
   const envPath = path.join(process.cwd(), '.env');
-  
+
   let envContent = `${config.envPrefix}_NODE_ENV=development
 ${config.envPrefix}_PORT=${config.port}
-${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.projectName}
+${config.envPrefix}_DATABASE_URL=postgres://postgres:postgres@localhost:5432/${config.projectName}-dev
 ${config.envPrefix}_API_VERSION=1.0
 ${config.envPrefix}_SECRET=your_secret_key
 ${config.envPrefix}_SALT_ROUNDS=10
@@ -129,6 +129,28 @@ ${config.envPrefix}_SALT_ROUNDS=10
   fs.writeFileSync(envPath, envContent);
   console.log('✅ Created .env and .env.example files');
 
+  // Create database if it doesn't exist
+  try {
+    const dbName = `${config.projectName}-dev`;
+    console.log(`Checking if database "${dbName}" exists...`);
+
+    // Check if database exists
+    const checkDbCommand = `psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${dbName}'"`;
+    const dbExists = execSync(checkDbCommand, { stdio: 'pipe' }).toString().trim() === '1';
+
+    if (!dbExists) {
+      console.log(`Creating database "${dbName}"...`);
+      const createDbCommand = `psql -U postgres -c "CREATE DATABASE \\"${dbName}\\""`;
+      execSync(createDbCommand, { stdio: 'inherit' });
+      console.log(`✅ Created database "${dbName}"`);
+    } else {
+      console.log(`✅ Database "${dbName}" already exists`);
+    }
+  } catch (error) {
+    console.error(`❌ Failed to create database: ${error.message}`);
+    console.log('Please create the database manually or ensure PostgreSQL is running.');
+  }
+
   // Update references in code files
   const envUtilsPath = path.join(process.cwd(), 'src', 'shared', 'utils', 'env.ts');
   if (fs.existsSync(envUtilsPath)) {
@@ -136,6 +158,46 @@ ${config.envPrefix}_SALT_ROUNDS=10
     envUtils = envUtils.replace(/APP_/g, `${config.envPrefix}_`);
     fs.writeFileSync(envUtilsPath, envUtils);
     console.log('✅ Updated environment variable prefix in source files');
+  }
+
+  // Update database.json
+  const databaseJsonPath = path.join(process.cwd(), 'database.json');
+  if (fs.existsSync(databaseJsonPath)) {
+    let databaseJson = fs.readFileSync(databaseJsonPath, 'utf-8');
+    databaseJson = databaseJson.replace(/APP_DATABASE_URL/g, `${config.envPrefix}_DATABASE_URL`);
+    fs.writeFileSync(databaseJsonPath, databaseJson);
+    console.log('✅ Updated database.json with correct environment variable prefix');
+  }
+
+  // Update constants.ts
+  const constantsPath = path.join(process.cwd(), 'src', 'shared', 'constants.ts');
+  if (fs.existsSync(constantsPath)) {
+    let constants = fs.readFileSync(constantsPath, 'utf-8');
+    constants = constants.replace(/APP_PREFIX/g, `${config.envPrefix}_PREFIX`);
+    constants = constants.replace(/APP_/g, `${config.envPrefix}_`);
+    fs.writeFileSync(constantsPath, constants);
+    console.log('✅ Updated constants.ts with correct prefix');
+  }
+
+  // Update README.md
+  const readmePath = path.join(process.cwd(), 'README.md');
+  if (fs.existsSync(readmePath)) {
+    let readme = fs.readFileSync(readmePath, 'utf-8');
+    readme = readme.replace(/APP_NODE_ENV/g, `${config.envPrefix}_NODE_ENV`);
+    readme = readme.replace(/APP_PORT/g, `${config.envPrefix}_PORT`);
+    readme = readme.replace(/APP_DATABASE_URL/g, `${config.envPrefix}_DATABASE_URL`);
+    readme = readme.replace(/APP_SECRET/g, `${config.envPrefix}_SECRET`);
+    fs.writeFileSync(readmePath, readme);
+    console.log('✅ Updated README.md with correct environment variable names');
+  }
+
+  // Update test script in package.json
+  if (packageJson.scripts && packageJson.scripts.test) {
+    packageJson.scripts.test = packageJson.scripts.test
+      .replace(/APP_NODE_ENV/g, `${config.envPrefix}_NODE_ENV`)
+      .replace(/APP_SECRET/g, `${config.envPrefix}_SECRET`);
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log('✅ Updated test script in package.json');
   }
 
   // Initialize Git if requested
