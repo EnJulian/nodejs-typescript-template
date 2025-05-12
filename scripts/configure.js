@@ -103,6 +103,57 @@ function askQuestions(questions, index = 0) {
   });
 }
 
+// Recursive function to replace template strings in all files
+function replaceInAllFiles(dir, replacements) {
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    // Skip node_modules, .git, and dist directories
+    if (file === 'node_modules' || file === '.git' || file === 'dist') {
+      continue;
+    }
+
+    if (stat.isDirectory()) {
+      // Recursively process subdirectories
+      replaceInAllFiles(filePath, replacements);
+    } else {
+      // Skip binary files and large files
+      if (stat.size > 1024 * 1024 || path.extname(file) === '.png' || 
+          path.extname(file) === '.jpg' || path.extname(file) === '.jpeg' || 
+          path.extname(file) === '.gif' || path.extname(file) === '.ico' ||
+          path.extname(file) === '.woff' || path.extname(file) === '.woff2' ||
+          path.extname(file) === '.ttf' || path.extname(file) === '.eot' ||
+          path.extname(file) === '.svg') {
+        continue;
+      }
+
+      try {
+        let content = fs.readFileSync(filePath, 'utf-8');
+        let modified = false;
+
+        for (const [search, replace] of replacements) {
+          // Check if the content includes the search string (case-insensitive)
+          if (content.toLowerCase().includes(search.toLowerCase())) {
+            // Create a case-insensitive regular expression for replacement
+            content = content.replace(new RegExp(search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi'), replace);
+            modified = true;
+          }
+        }
+
+        if (modified) {
+          fs.writeFileSync(filePath, content);
+        }
+      } catch (error) {
+        // Skip files that can't be read as text
+        continue;
+      }
+    }
+  }
+}
+
 function applyConfiguration() {
   console.log('\nApplying configuration...');
 
@@ -180,6 +231,7 @@ ${config.envPrefix}_SALT_ROUNDS=10
   if (fs.existsSync(constantsPath)) {
     let constants = fs.readFileSync(constantsPath, 'utf-8');
     constants = constants.replace(/APP_PREFIX/g, `${config.envPrefix}_PREFIX`);
+    constants = constants.replace(/'APP_'/g, `'${config.envPrefix}_'`);
     constants = constants.replace(/APP_/g, `${config.envPrefix}_`);
     fs.writeFileSync(constantsPath, constants);
     console.log('✅ Updated constants.ts with correct prefix');
@@ -189,12 +241,19 @@ ${config.envPrefix}_SALT_ROUNDS=10
   const readmePath = path.join(process.cwd(), 'README.md');
   if (fs.existsSync(readmePath)) {
     let readme = fs.readFileSync(readmePath, 'utf-8');
+    // Replace environment variables
     readme = readme.replace(/APP_NODE_ENV/g, `${config.envPrefix}_NODE_ENV`);
     readme = readme.replace(/APP_PORT/g, `${config.envPrefix}_PORT`);
     readme = readme.replace(/APP_DATABASE_URL/g, `${config.envPrefix}_DATABASE_URL`);
     readme = readme.replace(/APP_SECRET/g, `${config.envPrefix}_SECRET`);
+
+    // Replace template name and description
+    readme = readme.replace(/Node\.js TypeScript API Template/g, config.projectName);
+    readme = readme.replace(/A scalable and modular Node\.js TypeScript API template for quickly bootstrapping new projects\./g, config.projectDescription);
+    readme = readme.replace(/\*\*TypeScript\*\* for type safety/g, `**${config.projectName}** with type safety`);
+
     fs.writeFileSync(readmePath, readme);
-    console.log('✅ Updated README.md with correct environment variable names');
+    console.log('✅ Updated README.md with project name, description, and correct environment variable names');
   }
 
   // Update test script in package.json
@@ -226,6 +285,83 @@ ${config.envPrefix}_SALT_ROUNDS=10
       console.error('❌ Failed to set up Husky:', error.message);
     }
   }
+
+  // Replace all occurrences of template strings in all files
+  console.log('Replacing template strings in all files...');
+  const replacements = [
+    ['nodejs-typescript-template', config.projectName],
+    ['nodejs_typescript_template', config.databaseName],
+    ['Node.js TypeScript API Template', config.projectName],
+    ['NodeJS TypeScript Template', config.projectName],
+    ['TypeScript API Template', config.projectName],
+    ['TypeScript Template', config.projectName],
+    ['A scalable and modular Node.js TypeScript API template', config.projectDescription],
+    ['A NodeJS TypeScript API template', config.projectDescription],
+    ['A NodeJS TypeScript API project', config.projectDescription],
+    ['TypeScript for type safety', `${config.projectName} with type safety`]
+  ];
+
+  // Add a counter to track modified files
+  let modifiedFilesCount = 0;
+
+  // Modify the replaceInAllFiles function to log modified files
+  const originalReplaceInAllFiles = replaceInAllFiles;
+  replaceInAllFiles = function(dir, replacements) {
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+
+      // Skip node_modules, .git, and dist directories
+      if (file === 'node_modules' || file === '.git' || file === 'dist') {
+        continue;
+      }
+
+      if (stat.isDirectory()) {
+        // Recursively process subdirectories
+        replaceInAllFiles(filePath, replacements);
+      } else {
+        // Skip binary files and large files
+        if (stat.size > 1024 * 1024 || path.extname(file) === '.png' || 
+            path.extname(file) === '.jpg' || path.extname(file) === '.jpeg' || 
+            path.extname(file) === '.gif' || path.extname(file) === '.ico' ||
+            path.extname(file) === '.woff' || path.extname(file) === '.woff2' ||
+            path.extname(file) === '.ttf' || path.extname(file) === '.eot' ||
+            path.extname(file) === '.svg') {
+          continue;
+        }
+
+        try {
+          let content = fs.readFileSync(filePath, 'utf-8');
+          let modified = false;
+
+          for (const [search, replace] of replacements) {
+            // Check if the content includes the search string (case-insensitive)
+            if (content.toLowerCase().includes(search.toLowerCase())) {
+              // Create a case-insensitive regular expression for replacement
+              content = content.replace(new RegExp(search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'gi'), replace);
+              modified = true;
+            }
+          }
+
+          if (modified) {
+            fs.writeFileSync(filePath, content);
+            modifiedFilesCount++;
+            // Log the modified file path (relative to project root)
+            const relativePath = path.relative(process.cwd(), filePath);
+            console.log(`  Modified: ${relativePath}`);
+          }
+        } catch (error) {
+          // Skip files that can't be read as text
+          continue;
+        }
+      }
+    }
+  };
+
+  replaceInAllFiles(process.cwd(), replacements);
+  console.log(`✅ Replaced template strings in ${modifiedFilesCount} files`);
 
   console.log('\n🎉 Configuration complete! Your project is ready to use.');
   console.log(`\nTo start development server, run: npm run dev`);
