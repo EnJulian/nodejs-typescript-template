@@ -15,9 +15,10 @@ const { combine, timestamp, printf, colorize, align } = format;
 
 // Custom log format
 const logFormat = printf(({ timestamp, level, message, ...meta }) => {
-  const stringifiedMeta = meta && Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-  const contextStr = meta.context ? `[${meta.context}] ` : '';
-  return `[${timestamp}] [${level}] ${contextStr}${message} ${stringifiedMeta}`;
+  // Remove context from meta to avoid displaying it
+  const { context, ...restMeta } = meta;
+  const stringifiedMeta = restMeta && Object.keys(restMeta).length ? JSON.stringify(restMeta, null, 2) : '';
+  return `[${timestamp}] [${level}] ${message} ${stringifiedMeta}`;
 });
 
 // Create file transport for daily rotation
@@ -49,6 +50,7 @@ class Logger {
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         logFormat
       ),
+      // Store context internally but don't display it in logs
       defaultMeta: context ? { context } : {},
       transports: [
         fileTransport,
