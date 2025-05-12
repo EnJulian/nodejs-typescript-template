@@ -136,7 +136,7 @@ export class UserService {
     }
 
     const result = await query('DELETE FROM users WHERE id = $1', [id]);
-    return result.rowCount > 0;
+    return !!result.rowCount && result.rowCount > 0;
   }
 
   /**

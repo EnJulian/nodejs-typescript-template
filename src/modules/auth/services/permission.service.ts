@@ -26,11 +26,11 @@ export class PermissionService {
         [role]
       );
 
-      const permissions = result.rows.map((row) => row.permission as Permission);
-      
+      const permissions = result.rows.map((row: { permission: string }) => row.permission as Permission);
+
       // Cache the permissions
       this.permissionCache.set(cacheKey, permissions);
-      
+
       return permissions;
     } catch (error) {
       this.logger.error(`Failed to get permissions for role ${role}`, error);
@@ -57,7 +57,7 @@ export class PermissionService {
         [role, permission]
       );
 
-      if (existingResult.rowCount > 0) {
+      if (existingResult.rowCount && existingResult.rowCount > 0) {
         return true; // Permission already exists
       }
 
@@ -69,7 +69,7 @@ export class PermissionService {
 
       // Clear cache for this role
       this.permissionCache.delete(`role:${role}`);
-      
+
       return true;
     } catch (error) {
       this.logger.error(`Failed to add permission ${permission} to role ${role}`, error);
@@ -89,7 +89,7 @@ export class PermissionService {
 
       // Clear cache for this role
       this.permissionCache.delete(`role:${role}`);
-      
+
       return true;
     } catch (error) {
       this.logger.error(`Failed to remove permission ${permission} from role ${role}`, error);

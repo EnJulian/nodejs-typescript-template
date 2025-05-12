@@ -14,9 +14,10 @@ if (!fs.existsSync(logDir)) {
 const { combine, timestamp, printf, colorize, align } = format;
 
 // Custom log format
-const logFormat = printf(({ timestamp, level, message, context, ...meta }) => {
+const logFormat = printf(({ timestamp, level, message, ...meta }) => {
   const stringifiedMeta = meta && Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-  return `[${timestamp}] [${level}] ${context ? `[${context}] ` : ''}${message} ${stringifiedMeta}`;
+  const contextStr = meta.context ? `[${meta.context}] ` : '';
+  return `[${timestamp}] [${level}] ${contextStr}${message} ${stringifiedMeta}`;
 });
 
 // Create file transport for daily rotation
@@ -40,10 +41,8 @@ const consoleTransport = new winston.transports.Console({
 // Custom logger class
 class Logger {
   private logger: winston.Logger;
-  private context?: string;
 
   constructor(context?: string) {
-    this.context = context;
     this.logger = winston.createLogger({
       level: Env.get<string>('NODE_ENV') === AppEnv.PRODUCTION ? 'info' : 'debug',
       format: combine(

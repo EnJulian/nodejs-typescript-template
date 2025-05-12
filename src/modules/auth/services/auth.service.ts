@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import { UserService } from '../../user/services/user.service';
 import Env from '../../../shared/utils/env';
 import { User } from '../../user/entities/user.entity';
@@ -24,17 +23,17 @@ export class AuthService {
     try {
       // Validate user credentials
       const user = await this.userService.validateUser(email, password);
-      
+
       if (!user) {
         return null;
       }
 
       // Generate JWT token
       const token = this.generateToken(user);
-      
+
       // Remove password from user object
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return { 
         user: userWithoutPassword,
         token 
@@ -75,10 +74,10 @@ export class AuthService {
 
       // Generate JWT token
       const token = this.generateToken(user);
-      
+
       // Remove password from user object
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return { 
         user: userWithoutPassword,
         token 
@@ -96,14 +95,14 @@ export class AuthService {
     try {
       const decoded = jwt.verify(token, Env.get<string>('SECRET')) as { id: string };
       const user = await this.userService.findById(decoded.id);
-      
+
       if (!user) {
         return null;
       }
-      
+
       // Remove password from user object
       const { password: _, ...userWithoutPassword } = user;
-      
+
       return userWithoutPassword;
     } catch (error) {
       this.logger.error('Token verification error', error);

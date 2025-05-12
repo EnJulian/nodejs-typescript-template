@@ -20,14 +20,14 @@ export const errorHandler = (
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction
+  _next: NextFunction
 ) => {
   const logger = new Logger('ErrorHandler');
   const nodeEnv = Env.get<string>('NODE_ENV');
 
   const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   const message = err.message || 'Something went wrong';
-  
+
   // Log the error
   logger.error(`${req.method} ${req.path} - ${err.message}`, err);
 

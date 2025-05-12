@@ -19,13 +19,13 @@ interface AuthenticatedRequest extends Request {
  */
 export const authenticate = async (
   req: AuthenticatedRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       const error = new Error('No token provided') as ICustomError;
       error.statusCode = StatusCodes.UNAUTHORIZED;
@@ -33,25 +33,25 @@ export const authenticate = async (
     }
 
     const token = authHeader.split(' ')[1];
-    
+
     // Verify token
     const decoded = jwt.verify(token, Env.get<string>('SECRET')) as { id: string };
-    
+
     // Get user from database
     const user = await userService.findById(decoded.id);
-    
+
     if (!user) {
       const error = new Error('User not found') as ICustomError;
       error.statusCode = StatusCodes.UNAUTHORIZED;
       return next(error);
     }
-    
+
     // Add user to request
     req.user = {
       id: user.id,
       role: user.role
     };
-    
+
     next();
   } catch (error: any) {
     if (error.name === 'JsonWebTokenError') {
@@ -59,13 +59,13 @@ export const authenticate = async (
       customError.statusCode = StatusCodes.UNAUTHORIZED;
       return next(customError);
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       const customError = new Error('Token expired') as ICustomError;
       customError.statusCode = StatusCodes.UNAUTHORIZED;
       return next(customError);
     }
-    
+
     next(error);
   }
 }; 
