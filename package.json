@@ -4,9 +4,9 @@
   "description": "A NodeJS TypeScript API template",
   "main": "dist/index.js",
   "scripts": {
-    "start": "npm run migrate:up && node dist/index.js",
+    "start": "npm run build && npm run migrate:up && node dist/index.js",
     "build": "tsc",
-    "dev": "npm run migrate:up && nodemon --exec ts-node ./src/index.ts --mode development",
+    "dev": "npm run build && npm run migrate:up && nodemon --exec ts-node ./src/index.ts --mode development",
     "migrate": "db-migrate --migrations-dir ./migrations",
     "migrate:up": "npm run migrate up",
     "migrate:down": "npm run migrate down",
